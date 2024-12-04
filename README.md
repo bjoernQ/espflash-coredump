@@ -1,6 +1,6 @@
 # espflash-coredump
 
-This is a convenience espflash log-processor for the `coredump*` feature in `esp-backtrace`.
+This is a convenience espflash log-processor for the `coredump*` feature in `esp-backtrace`. (see https://github.com/esp-rs/esp-hal/pull/2672)
 
 You need `espflash` commit `4f8a526e23cf16223bd06e391807ae5fb7f18913` or later. (i.e. a version later than `3.2.0`)
 
