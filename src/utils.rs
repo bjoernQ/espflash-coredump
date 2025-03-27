@@ -77,10 +77,6 @@ impl Tokker {
             TokkerPollResult::None
         }
     }
-
-    pub fn is_empty(&self) -> bool {
-        self.in_flight.is_empty()
-    }
 }
 
 #[derive(Debug)]

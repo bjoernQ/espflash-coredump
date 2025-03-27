@@ -1,4 +1,7 @@
-use std::io::{stdin, Read};
+use std::io::Read;
+use std::io::{self};
+use std::sync::mpsc::{self, Receiver, Sender};
+use std::thread;
 
 mod utils;
 
@@ -16,14 +19,13 @@ fn main() {
     let mut state = State::Wait;
     let mut utf8fixer = Utf8Fixer::new();
     let mut pipe = Tokker::new(vec!["@COREDUMP\n".to_string(), "@ENDCOREDUMP".to_string()]);
-    let mut buf = [0u8; 1024];
     let mut pushed_back = None;
+
+    let receiver = spawn_stdin_stream();
     loop {
-        if pipe.is_empty() {
-            if let Ok(len) = stdin().read(&mut buf) {
-                utf8fixer.push(&buf[..len]);
-                pipe.push(&utf8fixer.poll());
-            }
+        if let Ok(v) = receiver.recv() {
+            utf8fixer.push(&v);
+            pipe.push(&utf8fixer.poll());
         }
 
         let received = pipe.poll();
@@ -101,4 +103,25 @@ enum State {
     Receiving,
     Done,
     Idle,
+}
+
+pub fn spawn_stdin_stream() -> Receiver<Vec<u8>> {
+    let (tx, rx): (Sender<Vec<u8>>, Receiver<Vec<u8>>) = mpsc::channel();
+
+    thread::spawn(move || {
+        let stdin = io::stdin();
+        let mut stdin_lock = stdin.lock();
+
+        loop {
+            let mut buffer = [0u8; 1024];
+            match stdin_lock.read(&mut buffer) {
+                Ok(len) => {
+                    let _ = tx.send(Vec::from(&buffer[..len]));
+                }
+                Err(_) => (), // Read failure
+            }
+        }
+    });
+
+    rx
 }
