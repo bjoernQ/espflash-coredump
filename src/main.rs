@@ -23,7 +23,7 @@ fn main() {
 
     let receiver = spawn_stdin_stream();
     loop {
-        if let Ok(v) = receiver.recv() {
+        if let Ok(v) = receiver.try_recv() {
             utf8fixer.push(&v);
             pipe.push(&utf8fixer.poll());
         }
@@ -97,7 +97,7 @@ fn main() {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum State {
     Wait,
     Receiving,

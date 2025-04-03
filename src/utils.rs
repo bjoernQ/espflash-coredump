@@ -360,6 +360,66 @@ mod test {
     }
 
     #[test]
+    fn test9() {
+        let mut stream = Tokker::new(vec!["@COREDUMP\n".to_string(), "@ENDCOREDUMP".to_string()]);
+
+        stream.push(b"diwjeodj wefijweoifj weoifjweiojf owefiojwo");
+        assert_eq!(
+            TokkerPollResult::Data("diwjeodj wefijweoifj weoifjweiojf owefiojwo".to_string()),
+            stream.poll()
+        );
+
+        stream.push(b"@COREDUMP\n1234567890");
+        assert_eq!(
+            TokkerPollResult::Token("@COREDUMP\n".to_string()),
+            stream.poll()
+        );
+
+        assert_eq!(
+            TokkerPollResult::Data("1234567890".to_string()),
+            stream.poll()
+        );
+
+        assert_eq!(TokkerPollResult::None, stream.poll());
+
+        stream.push(b"000000000000000a54000420a00000005000000000000000000000000000000");
+        assert_eq!(
+            TokkerPollResult::Data("000000000000000a54000420a00000005000000000000000000000000000000".to_string()),
+            stream.poll()
+        );
+
+        assert_eq!(TokkerPollResult::None, stream.poll());
+
+
+        stream.push(b"0");
+        assert_eq!(
+            TokkerPollResult::Data("0".to_string()),
+            stream.poll()
+        );
+
+        assert_eq!(TokkerPollResult::None, stream.poll());
+
+
+        stream.push(b"0000000000000000000000000000000@ENDCOREDUMP\n");
+        assert_eq!(
+            TokkerPollResult::Data("0000000000000000000000000000000".to_string()),
+            stream.poll()
+        );
+
+        assert_eq!(
+            TokkerPollResult::Token("@ENDCOREDUMP".to_string()),
+            stream.poll()
+        );
+
+        assert_eq!(
+            TokkerPollResult::Data("\n".to_string()),
+            stream.poll()
+        );
+
+        assert_eq!(TokkerPollResult::None, stream.poll());
+    }
+
+    #[test]
     fn test0_utf() {
         let mut v = Utf8Fixer::new();
 
